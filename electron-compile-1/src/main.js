@@ -10,7 +10,8 @@ let mainWindow,
     loadingScreen,
     windowParams = {
         width: 1000,
-        height: 800
+        height: 700,
+        show: false
     };
 
 function createWindow() {
@@ -19,9 +20,7 @@ function createWindow() {
 
     // and load the index.html of the app.
     mainWindow.loadURL(`file://${__dirname}/index.html`);
-
-    mainWindow.hide();
-    mainWindow.setProgressBar(-1); // hack: force icon refresh
+    // mainWindow.setProgressBar(-1); // hack: force icon refresh
     mainWindow.webContents.on('did-finish-load', () => {
         mainWindow.show();
 
@@ -45,9 +44,12 @@ function createWindow() {
 }
 
 function createLoadingScreen() {
-    loadingScreen = new BrowserWindow(Object.assign(windowParams, {title: 'Loading...'}));
+    loadingScreen = new BrowserWindow(Object.assign(windowParams, {parent: mainWindow}));
     loadingScreen.loadURL('file://' + __dirname + '/loading.html');
     loadingScreen.on('closed', () => loadingScreen = null);
+    loadingScreen.webContents.on('did-finish-load', () => {
+        loadingScreen.show();
+    });
 }
 
 // This method will be called when Electron has finished
