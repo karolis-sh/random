@@ -4,5 +4,5 @@
 # Install dependencies and run the app
 npm install && npm start
 # Package for production for current platform
-npm package-this
+npm quick-package
 ```
