@@ -6,14 +6,31 @@ const BrowserWindow = electron.BrowserWindow;
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+let mainWindow,
+    loadingScreen,
+    windowParams = {
+        width: 1000,
+        height: 800
+    };
 
 function createWindow() {
     // Create the browser window.
-    mainWindow = new BrowserWindow({width: 800, height: 600});
+    mainWindow = new BrowserWindow(windowParams);
 
     // and load the index.html of the app.
     mainWindow.loadURL(`file://${__dirname}/index.html`);
+
+    mainWindow.hide();
+    mainWindow.setProgressBar(-1); // hack: force icon refresh
+    mainWindow.webContents.on('did-finish-load', () => {
+        mainWindow.show();
+
+        if (loadingScreen) {
+            let loadingScreenBounds = loadingScreen.getBounds();
+            mainWindow.setBounds(loadingScreenBounds);
+            loadingScreen.close();
+        }
+    });
 
     // Open the DevTools.
     mainWindow.webContents.openDevTools();
@@ -27,10 +44,19 @@ function createWindow() {
     })
 }
 
+function createLoadingScreen() {
+    loadingScreen = new BrowserWindow(Object.assign(windowParams, {title: 'Loading...'}));
+    loadingScreen.loadURL('file://' + __dirname + '/loading.html');
+    loadingScreen.on('closed', () => loadingScreen = null);
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', () => {
+    createLoadingScreen();
+    createWindow();
+});
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {
